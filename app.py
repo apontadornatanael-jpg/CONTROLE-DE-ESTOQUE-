@@ -762,13 +762,18 @@ MENU_OPCOES = [
     "👥 Usuários"
 ]
 
-if "pagina_menu" not in st.session_state:
-    st.session_state.pagina_menu = MENU_OPCOES[0]
+# O radio é um widget do Streamlit. A navegação pelos botões do Dashboard
+# deve alterar o estado ANTES da criação do widget; por isso usamos callback.
+if "nav_radio" not in st.session_state:
+    st.session_state.nav_radio = MENU_OPCOES[0]
+
+def navegar_para(pagina_destino):
+    st.session_state.nav_radio = pagina_destino
 
 pagina = st.sidebar.radio(
     "NAVEGAÇÃO",
     MENU_OPCOES,
-    key="pagina_menu"
+    key="nav_radio"
 )
 
 st.sidebar.divider()
@@ -964,27 +969,30 @@ if pagina == "📊 Dashboard":
             "📤  Nova Retirada\nRegistrar saída de materiais",
             key="dash_nova_retirada",
             use_container_width=True,
-            type="primary"
+            type="primary",
+            on_click=navegar_para,
+            args=("📤 Nova Retirada",)
         ):
-            st.session_state.pagina_menu = "📤 Nova Retirada"
             st.rerun()
 
     with qa2:
         if st.button(
             "📦  Estoque Atual\nConsultar saldos",
             key="dash_estoque",
-            use_container_width=True
+            use_container_width=True,
+            on_click=navegar_para,
+            args=("📋 Estoque Atual",)
         ):
-            st.session_state.pagina_menu = "📋 Estoque Atual"
             st.rerun()
 
     with qa3:
         if st.button(
             "🔄  Movimentações\nConsultar histórico",
             key="dash_movimentacoes",
-            use_container_width=True
+            use_container_width=True,
+            on_click=navegar_para,
+            args=("🔄 Movimentações",)
         ):
-            st.session_state.pagina_menu = "🔄 Movimentações"
             st.rerun()
 
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
