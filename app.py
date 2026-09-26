@@ -351,6 +351,102 @@ st.markdown(
             box-shadow: 0 4px 14px rgba(15,23,42,.04);
         }
 
+        .dashboard-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: linear-gradient(135deg, #18324a 0%, #244b6b 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin: 4px 0 18px;
+            box-shadow: 0 8px 22px rgba(24,50,74,.16);
+        }
+
+        .dashboard-strip-title {
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .dashboard-strip-subtitle {
+            font-size: 12px;
+            opacity: .82;
+            margin-top: 3px;
+        }
+
+        .dashboard-strip-badge {
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.18);
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .secondary-kpi {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 4px 14px rgba(15,23,42,.035);
+            min-height: 88px;
+        }
+
+        .secondary-kpi-label {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .secondary-kpi-value {
+            color: var(--primary);
+            font-size: 22px;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        .secondary-kpi-caption {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .alert-item {
+            border: 1px solid #f0d8a8;
+            background: #fffaf0;
+            border-radius: 12px;
+            padding: 11px 12px;
+            margin: 7px 0;
+        }
+
+        .alert-item-name {
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .alert-item-stock {
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 800;
+            margin-top: 3px;
+        }
+
+        .alert-item-min {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .dashboard-note {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+
         @media (max-width: 800px) {
             .block-container {
                 padding-left: .8rem;
@@ -656,17 +752,23 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
+MENU_OPCOES = [
+    "📊 Dashboard",
+    "📤 Nova Retirada",
+    "📦 Cadastro de Materiais",
+    "📋 Estoque Atual",
+    "🔄 Movimentações",
+    "🏗️ Destinos / Sondas",
+    "👥 Usuários"
+]
+
+if "pagina_menu" not in st.session_state:
+    st.session_state.pagina_menu = MENU_OPCOES[0]
+
 pagina = st.sidebar.radio(
     "NAVEGAÇÃO",
-    [
-        "📊 Dashboard",
-        "📤 Nova Retirada",
-        "📦 Cadastro de Materiais",
-        "📋 Estoque Atual",
-        "🔄 Movimentações",
-        "🏗️ Destinos / Sondas",
-        "👥 Usuários"
-    ]
+    MENU_OPCOES,
+    key="pagina_menu"
 )
 
 st.sidebar.divider()
@@ -694,7 +796,7 @@ if pagina == "📊 Dashboard":
         <div class="page-header">
             <div>
                 <div class="page-title">📦 Dashboard</div>
-                <div class="page-subtitle">Visão geral do estoque e das movimentações</div>
+                <div class="page-subtitle">Visão geral do estoque, operações e rastreabilidade</div>
             </div>
             <div class="header-badge">● SISTEMA ONLINE</div>
         </div>
@@ -704,31 +806,98 @@ if pagina == "📊 Dashboard":
 
     estoque = buscar_estoque()
     movimentos = buscar_movimentacoes()
+    materiais = buscar_materiais()
+    destinos = buscar_destinos()
 
     df_estoque = pd.DataFrame(estoque)
     df_mov = pd.DataFrame(movimentos)
+    df_materiais = pd.DataFrame(materiais)
+    df_destinos = pd.DataFrame(destinos)
 
-    total_materiais = len(df_estoque)
+    # --------------------------------------------------------
+    # PREPARAÇÃO DOS DADOS
+    # --------------------------------------------------------
+    total_materiais = len(df_materiais) if not df_materiais.empty else len(df_estoque)
+
     estoque_baixo = 0
+    total_quantidade_estoque = 0.0
 
-    if not df_estoque.empty and "estoque_baixo" in df_estoque.columns:
-        estoque_baixo = int(
-            df_estoque["estoque_baixo"].fillna(False).astype(bool).sum()
-        )
+    if not df_estoque.empty:
+        if "estoque_baixo" in df_estoque.columns:
+            estoque_baixo = int(
+                df_estoque["estoque_baixo"].fillna(False).astype(bool).sum()
+            )
+
+        if "quantidade" in df_estoque.columns:
+            total_quantidade_estoque = float(
+                pd.to_numeric(df_estoque["quantidade"], errors="coerce")
+                .fillna(0)
+                .sum()
+            )
+
+    alto_valor = 0
+    if not df_materiais.empty and "alto_valor" in df_materiais.columns:
+        alto_valor = int(df_materiais["alto_valor"].fillna(False).astype(bool).sum())
+
+    destinos_ativos = len(df_destinos) if not df_destinos.empty else 0
+
+    total_movimentacoes = 0
+    if not df_mov.empty:
+        if "numero_movimentacao" in df_mov.columns:
+            total_movimentacoes = int(
+                df_mov["numero_movimentacao"].dropna().nunique()
+            )
+        else:
+            total_movimentacoes = len(df_mov)
 
     hoje = datetime.now().date()
     retiradas_hoje = 0
     entradas_hoje = 0
 
     if not df_mov.empty and "data_hora" in df_mov.columns:
-        datas = pd.to_datetime(df_mov["data_hora"], errors="coerce").dt.date
-        hoje_df = df_mov[datas == hoje]
+        df_mov["_data"] = pd.to_datetime(
+            df_mov["data_hora"], errors="coerce"
+        ).dt.date
 
-        if "tipo" in hoje_df.columns:
+        hoje_df = df_mov[df_mov["_data"] == hoje].copy()
+
+        if "numero_movimentacao" in hoje_df.columns:
+            if "tipo" in hoje_df.columns:
+                retiradas_hoje = int(
+                    hoje_df.loc[hoje_df["tipo"] == "RETIRADA",
+                                "numero_movimentacao"].dropna().nunique()
+                )
+                entradas_hoje = int(
+                    hoje_df.loc[hoje_df["tipo"] == "ENTRADA",
+                                "numero_movimentacao"].dropna().nunique()
+                )
+        elif "tipo" in hoje_df.columns:
             retiradas_hoje = int((hoje_df["tipo"] == "RETIRADA").sum())
             entradas_hoje = int((hoje_df["tipo"] == "ENTRADA").sum())
 
-    # KPIs
+    # --------------------------------------------------------
+    # FAIXA DE STATUS
+    # --------------------------------------------------------
+    st.markdown(
+        f"""
+        <div class="dashboard-strip">
+            <div>
+                <div class="dashboard-strip-title">Operação do estoque</div>
+                <div class="dashboard-strip-subtitle">
+                    Acompanhe saldos, retiradas, entradas e materiais que precisam de atenção.
+                </div>
+            </div>
+            <div class="dashboard-strip-badge">
+                📦 {total_materiais} materiais cadastrados
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # --------------------------------------------------------
+    # KPIs PRINCIPAIS
+    # --------------------------------------------------------
     k1, k2, k3, k4 = st.columns(4)
 
     cards = [
@@ -754,69 +923,135 @@ if pagina == "📊 Dashboard":
                 unsafe_allow_html=True
             )
 
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-    # Ações rápidas
-    st.markdown('<div class="panel-title">Acesso rápido</div>', unsafe_allow_html=True)
-    qa1, qa2, qa3 = st.columns(3)
+    # --------------------------------------------------------
+    # KPIs SECUNDÁRIOS
+    # --------------------------------------------------------
+    s1, s2, s3, s4 = st.columns(4)
 
-    with qa1:
-        st.markdown(
-            '<div class="quick-action">📤<br><b>Nova Retirada</b><br><small>Registrar saída de materiais</small></div>',
-            unsafe_allow_html=True
-        )
-    with qa2:
-        st.markdown(
-            '<div class="quick-action">📦<br><b>Estoque Atual</b><br><small>Consultar saldos</small></div>',
-            unsafe_allow_html=True
-        )
-    with qa3:
-        st.markdown(
-            '<div class="quick-action">🔄<br><b>Movimentações</b><br><small>Consultar histórico</small></div>',
-            unsafe_allow_html=True
-        )
+    secondary = [
+        ("📊", "Movimentações", total_movimentacoes, "Histórico total"),
+        ("📦", "Quantidade em estoque", f"{total_quantidade_estoque:g}", "Soma dos saldos"),
+        ("💰", "Materiais de alto valor", alto_valor, "Controle especial"),
+        ("🏗️", "Destinos / sondas", destinos_ativos, "Cadastros ativos"),
+    ]
+
+    for col, (icon, label, value, caption) in zip([s1, s2, s3, s4], secondary):
+        with col:
+            st.markdown(
+                f"""
+                <div class="secondary-kpi">
+                    <div class="secondary-kpi-label">{icon} {label}</div>
+                    <div class="secondary-kpi-value">{value}</div>
+                    <div class="secondary-kpi-caption">{caption}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
     st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
 
-    left, right = st.columns([1.7, 1])
+    # --------------------------------------------------------
+    # ACESSO RÁPIDO
+    # --------------------------------------------------------
+    st.markdown('<div class="section-label">Acesso rápido</div>', unsafe_allow_html=True)
 
-    with left:
+    qa1, qa2, qa3 = st.columns(3)
+
+    with qa1:
+        if st.button(
+            "📤  Nova Retirada\nRegistrar saída de materiais",
+            key="dash_nova_retirada",
+            use_container_width=True,
+            type="primary"
+        ):
+            st.session_state.pagina_menu = "📤 Nova Retirada"
+            st.rerun()
+
+    with qa2:
+        if st.button(
+            "📦  Estoque Atual\nConsultar saldos",
+            key="dash_estoque",
+            use_container_width=True
+        ):
+            st.session_state.pagina_menu = "📋 Estoque Atual"
+            st.rerun()
+
+    with qa3:
+        if st.button(
+            "🔄  Movimentações\nConsultar histórico",
+            key="dash_movimentacoes",
+            use_container_width=True
+        ):
+            st.session_state.pagina_menu = "🔄 Movimentações"
+            st.rerun()
+
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------
+    # GRÁFICO + ALERTAS
+    # --------------------------------------------------------
+    chart_col, alert_col = st.columns([1.65, 1])
+
+    with chart_col:
         st.markdown(
             """
             <div class="panel">
-                <div class="panel-title">🔄 Últimas movimentações</div>
-                <div class="panel-subtitle">Atividades mais recentes registradas no sistema</div>
+                <div class="panel-title">📈 Movimentações dos últimos 7 dias</div>
+                <div class="panel-subtitle">
+                    Quantidade de movimentações por dia, separadas entre entradas e retiradas.
+                </div>
             """,
             unsafe_allow_html=True
         )
 
-        if df_mov.empty:
-            st.markdown(
-                '<div class="empty-state">📭<br><br>Nenhuma movimentação registrada.</div>',
-                unsafe_allow_html=True
+        hoje_ts = pd.Timestamp(hoje)
+        ultimos_7 = pd.date_range(end=hoje_ts, periods=7, freq="D")
+        grafico = pd.DataFrame(
+            0,
+            index=ultimos_7,
+            columns=["Retiradas", "Entradas"]
+        )
+
+        if not df_mov.empty and "_data" in df_mov.columns and "tipo" in df_mov.columns:
+            temp = df_mov.copy()
+            temp["_data_ts"] = pd.to_datetime(temp["_data"], errors="coerce")
+
+            if "numero_movimentacao" in temp.columns:
+                temp = temp.drop_duplicates(
+                    subset=["numero_movimentacao", "tipo"]
+                )
+
+            retiradas = (
+                temp[temp["tipo"] == "RETIRADA"]
+                .groupby("_data_ts")
+                .size()
             )
-        else:
-            colunas = [
-                c for c in [
-                    "numero_movimentacao",
-                    "data_hora",
-                    "tipo",
-                    "destino_tag",
-                    "material_descricao",
-                    "quantidade",
-                    "unidade_sigla",
-                    "status"
-                ] if c in df_mov.columns
-            ]
-            st.dataframe(
-                df_mov[colunas].head(15),
-                use_container_width=True,
-                hide_index=True
+            entradas = (
+                temp[temp["tipo"] == "ENTRADA"]
+                .groupby("_data_ts")
+                .size()
             )
 
+            for data, valor in retiradas.items():
+                if data in grafico.index:
+                    grafico.loc[data, "Retiradas"] = int(valor)
+
+            for data, valor in entradas.items():
+                if data in grafico.index:
+                    grafico.loc[data, "Entradas"] = int(valor)
+
+        grafico.index = grafico.index.strftime("%d/%m")
+        st.bar_chart(grafico, use_container_width=True, height=250)
+
+        st.markdown(
+            '<div class="dashboard-note">O gráfico usa as movimentações registradas no histórico do sistema.</div>',
+            unsafe_allow_html=True
+        )
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with right:
+    with alert_col:
         st.markdown(
             """
             <div class="panel">
@@ -834,15 +1069,29 @@ if pagina == "📊 Dashboard":
             if baixos.empty:
                 st.success("✓ Nenhum material com estoque baixo.")
             else:
-                for _, row in baixos.head(8).iterrows():
+                for _, row in baixos.head(6).iterrows():
                     desc = row.get("descricao", "Material")
-                    qtd = row.get("quantidade", 0)
+                    qtd = pd.to_numeric(row.get("quantidade", 0), errors="coerce")
+                    qtd = 0 if pd.isna(qtd) else float(qtd)
                     unidade = row.get("unidade", "un")
+                    minimo = row.get(
+                        "estoque_minimo",
+                        row.get("minimo", row.get("quantidade_minima", "—"))
+                    )
+
+                    minimo_txt = "—"
+                    if minimo not in [None, "—", ""]:
+                        try:
+                            minimo_txt = f"{float(minimo):g} {unidade}"
+                        except Exception:
+                            minimo_txt = str(minimo)
+
                     st.markdown(
                         f"""
-                        <div class="step-card">
-                            <b>{desc}</b><br>
-                            <span class="stock-low">Estoque: {qtd:g} {unidade}</span>
+                        <div class="alert-item">
+                            <div class="alert-item-name">⚠️ {desc}</div>
+                            <div class="alert-item-stock">Estoque: {qtd:g} {unidade}</div>
+                            <div class="alert-item-min">Mínimo configurado: {minimo_txt}</div>
                         </div>
                         """,
                         unsafe_allow_html=True
@@ -851,6 +1100,119 @@ if pagina == "📊 Dashboard":
             st.info("Não foi possível calcular os alertas.")
 
         st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------
+    # ÚLTIMAS MOVIMENTAÇÕES
+    # --------------------------------------------------------
+    st.markdown(
+        """
+        <div class="panel">
+            <div class="panel-title">🔄 Últimas movimentações</div>
+            <div class="panel-subtitle">
+                Visão consolidada das operações mais recentes.
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if df_mov.empty:
+        st.markdown(
+            '<div class="empty-state">📭<br><br>Nenhuma movimentação registrada.</div>',
+            unsafe_allow_html=True
+        )
+    else:
+        recentes = df_mov.copy()
+
+        if "numero_movimentacao" in recentes.columns:
+            group_cols = ["numero_movimentacao"]
+
+            agg = {}
+            if "data_hora" in recentes.columns:
+                agg["data_hora"] = "first"
+            if "tipo" in recentes.columns:
+                agg["tipo"] = "first"
+            if "destino_tag" in recentes.columns:
+                agg["destino_tag"] = "first"
+            if "status" in recentes.columns:
+                agg["status"] = "first"
+
+            tabela_recente = recentes.groupby(group_cols, as_index=False).agg(agg)
+
+            tabela_recente["Itens"] = (
+                recentes.groupby("numero_movimentacao")
+                .size()
+                .values
+            )
+        else:
+            tabela_recente = recentes.copy()
+            tabela_recente["Itens"] = 1
+
+        tabela_recente = tabela_recente.head(10)
+
+        rename_map = {
+            "numero_movimentacao": "Movimento",
+            "data_hora": "Data / hora",
+            "tipo": "Tipo",
+            "destino_tag": "Destino",
+            "status": "Status"
+        }
+
+        tabela_recente = tabela_recente.rename(columns=rename_map)
+
+        colunas_finais = [
+            c for c in [
+                "Movimento",
+                "Data / hora",
+                "Tipo",
+                "Destino",
+                "Itens",
+                "Status"
+            ] if c in tabela_recente.columns
+        ]
+
+        st.dataframe(
+            tabela_recente[colunas_finais],
+            use_container_width=True,
+            hide_index=True
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------------
+    # RESUMO OPERACIONAL
+    # --------------------------------------------------------
+    st.markdown(
+        """
+        <div class="panel">
+            <div class="panel-title">📌 Resumo operacional</div>
+            <div class="panel-subtitle">
+                Indicadores rápidos para acompanhar o estado atual do estoque.
+            </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    r1, r2, r3 = st.columns(3)
+
+    with r1:
+        if estoque_baixo > 0:
+            st.warning(f"⚠️ {estoque_baixo} material(is) com estoque baixo.")
+        else:
+            st.success("✓ Nenhum material abaixo do mínimo.")
+
+    with r2:
+        st.info(
+            f"📦 O sistema possui {total_quantidade_estoque:g} unidades "
+            "somadas nos saldos atuais."
+        )
+
+    with r3:
+        st.info(
+            f"🔄 {total_movimentacoes} movimentação(ões) registrada(s) "
+            "no histórico."
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ============================================================
 # CADASTRO DE MATERIAIS
