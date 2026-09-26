@@ -40,49 +40,335 @@ supabase: Client = create_client(
 
 
 # ============================================================
-# ESTILO
+# ESTILO — INTERFACE MODERNA
 # ============================================================
 
 st.markdown(
     """
     <style>
-        .main {
-            padding-top: 1rem;
+        :root {
+            --primary: #18324a;
+            --primary-2: #244b6b;
+            --accent: #d58b2a;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #d99a19;
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        .stApp {
+            background: var(--bg);
+        }
+
+        [data-testid="stHeader"] {
+            background: rgba(244,246,248,.92);
         }
 
         .block-container {
-            max-width: 1400px;
-            padding-top: 1rem;
+            max-width: 1500px;
+            padding-top: 1.2rem;
+            padding-bottom: 3rem;
         }
 
-        .estoque-card {
-            padding: 18px;
-            border-radius: 12px;
-            border: 1px solid #dddddd;
-            background: #fafafa;
+        /* Sidebar */
+        section[data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #12283b 0%, #183b56 100%);
+            border-right: 1px solid rgba(255,255,255,.08);
         }
 
-        .titulo {
-            font-size: 30px;
+        section[data-testid="stSidebar"] * {
+            color: #f8fafc !important;
+        }
+
+        section[data-testid="stSidebar"] .stRadio label {
+            border-radius: 10px;
+            padding: 7px 10px;
+        }
+
+        section[data-testid="stSidebar"] .stRadio label:hover {
+            background: rgba(255,255,255,.10);
+        }
+
+        section[data-testid="stSidebar"] hr {
+            border-color: rgba(255,255,255,.15);
+        }
+
+        .sidebar-brand {
+            padding: 10px 6px 18px 6px;
+        }
+
+        .sidebar-brand .brand-icon {
+            font-size: 34px;
+            line-height: 1;
+        }
+
+        .sidebar-brand .brand-title {
+            font-size: 19px;
+            font-weight: 800;
+            margin-top: 7px;
+            letter-spacing: .3px;
+        }
+
+        .sidebar-brand .brand-subtitle {
+            font-size: 12px;
+            color: #cbd5e1 !important;
+            margin-top: 3px;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .page-title {
+            font-size: 31px;
+            line-height: 1.1;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -.6px;
+        }
+
+        .page-subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .header-badge {
+            background: #e8eef4;
+            color: var(--primary);
+            border: 1px solid #d6e0e8;
+            padding: 8px 13px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* KPI cards */
+        .kpi-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 18px 16px;
+            min-height: 126px;
+            box-shadow: 0 5px 18px rgba(15,23,42,.05);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(15,23,42,.09);
+        }
+
+        .kpi-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--muted);
+            font-size: 13px;
             font-weight: 700;
         }
 
-        .subtitulo {
-            color: #666;
-            font-size: 16px;
+        .kpi-icon {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            background: #edf2f7;
+            font-size: 20px;
         }
 
+        .kpi-value {
+            margin-top: 12px;
+            font-size: 29px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .kpi-caption {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* Generic cards */
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(15,23,42,.04);
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 3px;
+        }
+
+        .panel-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .section-label {
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+            margin: 8px 0 10px;
+        }
+
+        .movement-chip {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .chip-success {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .chip-warning {
+            color: #854d0e;
+            background: #fef3c7;
+        }
+
+        .chip-danger {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .step-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 15px 16px;
+            margin: 7px 0;
+        }
+
+        .step-number {
+            display: inline-flex;
+            width: 29px;
+            height: 29px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            margin-right: 8px;
+        }
+
+        .step-title {
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .stock-good {
+            color: #166534;
+            font-weight: 800;
+        }
+
+        .stock-low {
+            color: #b91c1c;
+            font-weight: 800;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 42px 20px;
+            color: var(--muted);
+            background: #fff;
+            border: 1px dashed #cfd6de;
+            border-radius: 16px;
+        }
+
+        /* Streamlit widgets */
         div[data-testid="stMetric"] {
-            border: 1px solid #dddddd;
-            padding: 12px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 4px 14px rgba(15,23,42,.04);
+        }
+
+        div[data-testid="stMetricLabel"] {
+            font-size: 12px;
+        }
+
+        .stButton > button,
+        .stFormSubmitButton > button {
             border-radius: 10px;
-            background: #fafafa;
+            min-height: 42px;
+            font-weight: 700;
+            border: 1px solid #d7dee5;
+        }
+
+        .stButton > button[kind="primary"],
+        .stFormSubmitButton > button[kind="primary"] {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .stTextInput input,
+        .stTextArea textarea,
+        .stNumberInput input,
+        .stSelectbox div[data-baseweb="select"] > div {
+            border-radius: 9px;
+        }
+
+        div[data-testid="stDataFrame"] {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .quick-action {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(15,23,42,.04);
+        }
+
+        @media (max-width: 800px) {
+            .block-container {
+                padding-left: .8rem;
+                padding-right: .8rem;
+            }
+
+            .page-title {
+                font-size: 25px;
+            }
+
+            .kpi-card {
+                min-height: 108px;
+            }
         }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 # ============================================================
 # FUNÇÕES AUXILIARES
@@ -359,10 +645,19 @@ def criar_mensagem_whatsapp(
 # MENU
 # ============================================================
 
-st.sidebar.markdown("## 📦 CONTROLE DE ESTOQUE")
+st.sidebar.markdown(
+    """
+    <div class="sidebar-brand">
+        <div class="brand-icon">📦</div>
+        <div class="brand-title">CONTROLE DE ESTOQUE</div>
+        <div class="brand-subtitle">Gestão e rastreabilidade de materiais</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 pagina = st.sidebar.radio(
-    "Menu",
+    "NAVEGAÇÃO",
     [
         "📊 Dashboard",
         "📤 Nova Retirada",
@@ -376,12 +671,15 @@ pagina = st.sidebar.radio(
 
 st.sidebar.divider()
 
-st.sidebar.caption(
-    "Sistema independente do DDH"
-)
-
-st.sidebar.caption(
-    "Controle de movimentação e rastreabilidade de materiais"
+st.sidebar.markdown(
+    """
+    <div style="font-size:12px;color:#cbd5e1 !important;line-height:1.6;">
+        <b>Operação</b><br>
+        Controle de entradas, retiradas e rastreabilidade.<br><br>
+        <span style="opacity:.75;">Sistema independente do DDH</span>
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 
@@ -392,18 +690,17 @@ st.sidebar.caption(
 if pagina == "📊 Dashboard":
 
     st.markdown(
-        '<div class="titulo">📦 Controle de Estoque</div>',
+        """
+        <div class="page-header">
+            <div>
+                <div class="page-title">📦 Dashboard</div>
+                <div class="page-subtitle">Visão geral do estoque e das movimentações</div>
+            </div>
+            <div class="header-badge">● SISTEMA ONLINE</div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
-
-    st.markdown(
-        '<div class="subtitulo">'
-        'Controle de movimentação de materiais'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    st.divider()
 
     estoque = buscar_estoque()
     movimentos = buscar_movimentacoes()
@@ -412,94 +709,148 @@ if pagina == "📊 Dashboard":
     df_mov = pd.DataFrame(movimentos)
 
     total_materiais = len(df_estoque)
-
     estoque_baixo = 0
 
     if not df_estoque.empty and "estoque_baixo" in df_estoque.columns:
         estoque_baixo = int(
-            df_estoque["estoque_baixo"]
-            .fillna(False)
-            .astype(bool)
-            .sum()
+            df_estoque["estoque_baixo"].fillna(False).astype(bool).sum()
         )
 
     hoje = datetime.now().date()
-
     retiradas_hoje = 0
     entradas_hoje = 0
 
     if not df_mov.empty and "data_hora" in df_mov.columns:
-
-        datas = pd.to_datetime(
-            df_mov["data_hora"],
-            errors="coerce"
-        ).dt.date
-
+        datas = pd.to_datetime(df_mov["data_hora"], errors="coerce").dt.date
         hoje_df = df_mov[datas == hoje]
 
         if "tipo" in hoje_df.columns:
-            retiradas_hoje = int(
-                (hoje_df["tipo"] == "RETIRADA").sum()
+            retiradas_hoje = int((hoje_df["tipo"] == "RETIRADA").sum())
+            entradas_hoje = int((hoje_df["tipo"] == "ENTRADA").sum())
+
+    # KPIs
+    k1, k2, k3, k4 = st.columns(4)
+
+    cards = [
+        ("📦", "Materiais cadastrados", total_materiais, "Itens ativos no catálogo"),
+        ("📤", "Retiradas hoje", retiradas_hoje, "Movimentações de saída"),
+        ("📥", "Entradas hoje", entradas_hoje, "Movimentações de entrada"),
+        ("⚠️", "Estoque baixo", estoque_baixo, "Materiais que precisam de atenção"),
+    ]
+
+    for col, (icon, label, value, caption) in zip([k1, k2, k3, k4], cards):
+        with col:
+            st.markdown(
+                f"""
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span>{label}</span>
+                        <span class="kpi-icon">{icon}</span>
+                    </div>
+                    <div class="kpi-value">{value}</div>
+                    <div class="kpi-caption">{caption}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
-            entradas_hoje = int(
-                (hoje_df["tipo"] == "ENTRADA").sum()
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+    # Ações rápidas
+    st.markdown('<div class="panel-title">Acesso rápido</div>', unsafe_allow_html=True)
+    qa1, qa2, qa3 = st.columns(3)
+
+    with qa1:
+        st.markdown(
+            '<div class="quick-action">📤<br><b>Nova Retirada</b><br><small>Registrar saída de materiais</small></div>',
+            unsafe_allow_html=True
+        )
+    with qa2:
+        st.markdown(
+            '<div class="quick-action">📦<br><b>Estoque Atual</b><br><small>Consultar saldos</small></div>',
+            unsafe_allow_html=True
+        )
+    with qa3:
+        st.markdown(
+            '<div class="quick-action">🔄<br><b>Movimentações</b><br><small>Consultar histórico</small></div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+    left, right = st.columns([1.7, 1])
+
+    with left:
+        st.markdown(
+            """
+            <div class="panel">
+                <div class="panel-title">🔄 Últimas movimentações</div>
+                <div class="panel-subtitle">Atividades mais recentes registradas no sistema</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        if df_mov.empty:
+            st.markdown(
+                '<div class="empty-state">📭<br><br>Nenhuma movimentação registrada.</div>',
+                unsafe_allow_html=True
             )
-
-    c1, c2, c3, c4 = st.columns(4)
-
-    with c1:
-        st.metric(
-            "📦 Materiais cadastrados",
-            total_materiais
-        )
-
-    with c2:
-        st.metric(
-            "📤 Retiradas hoje",
-            retiradas_hoje
-        )
-
-    with c3:
-        st.metric(
-            "📥 Entradas hoje",
-            entradas_hoje
-        )
-
-    with c4:
-        st.metric(
-            "⚠️ Estoque baixo",
-            estoque_baixo
-        )
-
-    st.divider()
-
-    st.subheader("📋 Últimas movimentações")
-
-    if df_mov.empty:
-        st.info("Nenhuma movimentação registrada.")
-    else:
-
-        colunas = [
-            c for c in [
-                "numero_movimentacao",
-                "data_hora",
-                "tipo",
-                "destino_tag",
-                "material_descricao",
-                "quantidade",
-                "unidade_sigla",
-                "status"
+        else:
+            colunas = [
+                c for c in [
+                    "numero_movimentacao",
+                    "data_hora",
+                    "tipo",
+                    "destino_tag",
+                    "material_descricao",
+                    "quantidade",
+                    "unidade_sigla",
+                    "status"
+                ] if c in df_mov.columns
             ]
-            if c in df_mov.columns
-        ]
+            st.dataframe(
+                df_mov[colunas].head(15),
+                use_container_width=True,
+                hide_index=True
+            )
 
-        st.dataframe(
-            df_mov[colunas].head(15),
-            use_container_width=True,
-            hide_index=True
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with right:
+        st.markdown(
+            """
+            <div class="panel">
+                <div class="panel-title">⚠️ Atenção no estoque</div>
+                <div class="panel-subtitle">Materiais próximos ou abaixo do mínimo</div>
+            """,
+            unsafe_allow_html=True
         )
 
+        if not df_estoque.empty and "estoque_baixo" in df_estoque.columns:
+            baixos = df_estoque[
+                df_estoque["estoque_baixo"].fillna(False).astype(bool)
+            ].copy()
+
+            if baixos.empty:
+                st.success("✓ Nenhum material com estoque baixo.")
+            else:
+                for _, row in baixos.head(8).iterrows():
+                    desc = row.get("descricao", "Material")
+                    qtd = row.get("quantidade", 0)
+                    unidade = row.get("unidade", "un")
+                    st.markdown(
+                        f"""
+                        <div class="step-card">
+                            <b>{desc}</b><br>
+                            <span class="stock-low">Estoque: {qtd:g} {unidade}</span>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+        else:
+            st.info("Não foi possível calcular os alertas.")
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ============================================================
 # CADASTRO DE MATERIAIS
@@ -507,7 +858,11 @@ if pagina == "📊 Dashboard":
 
 elif pagina == "📦 Cadastro de Materiais":
 
-    st.title("📦 Cadastro de Materiais")
+    st.markdown(
+        '<div class="page-title">📦 Cadastro de Materiais</div>'
+        '<div class="page-subtitle">Cadastre e configure os materiais utilizados nas operações.</div>',
+        unsafe_allow_html=True
+    )
 
     st.write(
         "Cadastre os materiais que poderão ser utilizados nas "
@@ -696,11 +1051,30 @@ elif pagina == "📦 Cadastro de Materiais":
 
 elif pagina == "📤 Nova Retirada":
 
-    st.title("📤 Nova Retirada")
+    st.markdown(
+        '<div class="page-title">📤 Nova Retirada</div>'
+        '<div class="page-subtitle">Registre uma saída de materiais com rastreabilidade completa.</div>',
+        unsafe_allow_html=True
+    )
 
-    st.info(
-        "Todos os itens desta tela serão registrados em uma única "
-        "movimentação."
+    st.markdown(
+        """
+        <div class="panel">
+            <div class="panel-title">📋 Como funciona</div>
+            <div class="panel-subtitle">
+                Escolha o destino, adicione os materiais, confira os responsáveis
+                e registre a movimentação.
+            </div>
+            <span class="movement-chip chip-success">1 DESTINO</span>
+            &nbsp;&nbsp;
+            <span class="movement-chip chip-success">2 MATERIAIS</span>
+            &nbsp;&nbsp;
+            <span class="movement-chip chip-success">3 CONFERÊNCIA</span>
+            &nbsp;&nbsp;
+            <span class="movement-chip chip-success">4 REGISTRO</span>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     materiais = buscar_materiais()
@@ -724,7 +1098,13 @@ elif pagina == "📤 Nova Retirada":
     agora = datetime.now()
 
     st.markdown(
-        f"### Movimentação: `{numero}`"
+        f"""
+        <div class="panel">
+            <div class="panel-title">Movimentação <span style="color:#18324a;">{numero}</span></div>
+            <div class="panel-subtitle">Número gerado automaticamente para rastreabilidade.</div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     c1, c2 = st.columns(2)
@@ -761,7 +1141,10 @@ elif pagina == "📤 Nova Retirada":
 
     st.divider()
 
-    st.subheader("📦 Itens da retirada")
+    st.markdown(
+        '<div class="section-label">Etapa 2 · Materiais da retirada</div>',
+        unsafe_allow_html=True
+    )
 
     if "itens_retirada" not in st.session_state:
         st.session_state.itens_retirada = [
@@ -958,7 +1341,10 @@ elif pagina == "📤 Nova Retirada":
     # RESPONSÁVEIS
     # --------------------------------------------------------
 
-    st.subheader("👤 Responsáveis")
+    st.markdown(
+        '<div class="section-label">Etapa 3 · Responsáveis</div>',
+        unsafe_allow_html=True
+    )
 
     nomes_usuarios = [
         u["nome"]
@@ -1018,7 +1404,10 @@ elif pagina == "📤 Nova Retirada":
     # DIVERGÊNCIA
     # --------------------------------------------------------
 
-    st.subheader("⚠️ Conferência")
+    st.markdown(
+        '<div class="section-label">Etapa 4 · Conferência</div>',
+        unsafe_allow_html=True
+    )
 
     divergencia = st.checkbox(
         "Existe divergência de quantidade ou material?"
@@ -1042,7 +1431,10 @@ elif pagina == "📤 Nova Retirada":
     # RESUMO
     # --------------------------------------------------------
 
-    st.subheader("📋 Resumo da retirada")
+    st.markdown(
+        '<div class="section-label">Conferência final</div>',
+        unsafe_allow_html=True
+    )
 
     resumo = []
 
@@ -1066,7 +1458,7 @@ elif pagina == "📤 Nova Retirada":
     )
 
     salvar_retirada = st.button(
-        "📤 REGISTRAR RETIRADA",
+        "📤 CONFIRMAR E REGISTRAR RETIRADA",
         type="primary",
         use_container_width=True
     )
@@ -1412,7 +1804,11 @@ elif pagina == "📤 Nova Retirada":
 
 elif pagina == "📋 Estoque Atual":
 
-    st.title("📋 Estoque Atual")
+    st.markdown(
+        '<div class="page-title">📋 Estoque Atual</div>'
+        '<div class="page-subtitle">Consulte saldos, limites e disponibilidade dos materiais.</div>',
+        unsafe_allow_html=True
+    )
 
     estoque = buscar_estoque()
 
@@ -1473,7 +1869,11 @@ elif pagina == "📋 Estoque Atual":
 
 elif pagina == "🔄 Movimentações":
 
-    st.title("🔄 Movimentações")
+    st.markdown(
+        '<div class="page-title">🔄 Movimentações</div>'
+        '<div class="page-subtitle">Histórico de entradas e retiradas registradas.</div>',
+        unsafe_allow_html=True
+    )
 
     movimentos = buscar_movimentacoes()
 
@@ -1569,7 +1969,11 @@ elif pagina == "🔄 Movimentações":
 
 elif pagina == "🏗️ Destinos / Sondas":
 
-    st.title("🏗️ Destinos / Sondas")
+    st.markdown(
+        '<div class="page-title">🏗️ Destinos / Sondas</div>'
+        '<div class="page-subtitle">Gerencie os locais e sondas que recebem materiais.</div>',
+        unsafe_allow_html=True
+    )
 
     st.write(
         "Destinos cadastrados para recebimento dos materiais."
@@ -1650,7 +2054,11 @@ elif pagina == "🏗️ Destinos / Sondas":
 
 elif pagina == "👥 Usuários":
 
-    st.title("👥 Usuários")
+    st.markdown(
+        '<div class="page-title">👥 Usuários</div>'
+        '<div class="page-subtitle">Gerencie os responsáveis pelas movimentações.</div>',
+        unsafe_allow_html=True
+    )
 
     st.write(
         "Cadastre as pessoas responsáveis pelas movimentações."
@@ -1736,3 +2144,22 @@ elif pagina == "👥 Usuários":
             use_container_width=True,
             hide_index=True
         )
+
+
+# ============================================================
+# RODAPÉ
+# ============================================================
+st.markdown(
+    """
+    <div style="
+        margin-top:35px;
+        padding:15px 4px;
+        border-top:1px solid #e5e7eb;
+        color:#8a94a0;
+        font-size:11px;
+        text-align:center;">
+        Controle de Estoque • Gestão de materiais e rastreabilidade
+    </div>
+    """,
+    unsafe_allow_html=True
+)
